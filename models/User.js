@@ -4,9 +4,11 @@ const md5 = require('md5');
 const validator = require('validator');
 
 class User {
-    constructor (data) {
+    constructor (data, getAvatar) {
         this.data = data;
         this.errors = [];
+        if(getAvatar === undefined) { getAvatar = false; }
+        if(getAvatar) { this.getAvatar() }
     }
 
     validate() {
