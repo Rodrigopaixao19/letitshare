@@ -87,3 +87,13 @@ exports.delete = (req, res) => {
         req.session.save(() => res.redirect('/'))
     })
 }
+
+exports.search = (req, res) => {
+    Post.search(req.body.searchTerm)
+    .then(posts => {
+        res.json(posts)
+    })
+    .catch(() => {
+        res.json([]);
+    })
+}
