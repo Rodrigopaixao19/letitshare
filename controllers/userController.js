@@ -1,7 +1,41 @@
 const User = require('../models/User');
 const Post = require('../models/Post');
 const Follow = require('../models/Follow'); 
+const jwt = require('jsonwebtoken');
 
+exports.apiGetPostsByUsername =  async(req, res) => {
+    try {
+        let authorDoc = await User.findByUsername(req.params.username);
+        let posts = await Post.findByAuthorId(authorDoc._id);
+        res.json(posts);
+    } catch {
+        res.json('Sorry, invalid user requested')
+    }
+}
+
+exports.apiMustBeLoggedIn = (req, res, next) => {
+    try {
+        req.apiUser = jwt.verify(req.body.token, process.env.JWTSECRET);
+        next();
+    } catch {
+        res.json('Sorry, you must provide a valid token.')
+    }
+}
+
+exports.doesUsernameExist = (req, res) => {
+    User.findByUsername(req.body.username)
+    .then(() => {
+        res.json(true);
+    })
+    .catch(() => {
+        res.json(false)
+    })
+}
+
+exports.doesEmailExist = async (req, res) => {
+    let emailBool = await User.doesEmailExist(req.body.email)
+    res.json(emailBool)
+}
 
 exports.sharedProfileData = async (req, res, next) => {
     let isVisitorsProfile = false;
@@ -51,6 +85,17 @@ exports.login = function(req, res) {
         req.session.save(() => {
             res.redirect('/');
         })
+    });
+}
+
+exports.apiLogin = function(req, res) {
+    let user = new User(req.body);
+    user.login()
+    .then((result) => {
+      res.json(jwt.sign({_id: user.data._id}, process.env.JWTSECRET, {expiresIn: '7d'}))
+    })
+    .catch((error) => {
+        res.json('sorry, something went wrong');
     });
 }
 
@@ -107,6 +152,7 @@ exports.profilePostsScreen = function(req, res) {
     // ask our post model for posts by a certain author id
     Post.findByAuthorId(req.profileUser._id).then(function(posts) {
       res.render('profile', {
+        title: `${req.profileUser.username}`,
         currentPage: 'posts',
         posts: posts,
         profileUsername: req.profileUser.username,
@@ -153,3 +199,4 @@ exports.profileFollowingScreen = async function (req, res) {
         res.render('404');
      }
 }
+
