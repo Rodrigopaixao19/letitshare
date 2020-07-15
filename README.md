@@ -9,6 +9,15 @@
 
 
 
+# What can you do
+
+- Register as a new user
+- Create/Update/Delete posts
+- Search for posts and users
+- Follow other users and read their posts
+- Chat in realtime
+
+
 # :computer: Stack / 📦  Libraries
 - HTML5
 - CSS3
